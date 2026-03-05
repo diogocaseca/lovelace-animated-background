@@ -517,10 +517,12 @@ function renderBackgroundHTML() {
         Opacity = current_config.opacity;
       }
 
-      var transparent_body = document.createElement ("style");
+      var transparent_body = document.createElement("style");
       transparent_body.innerHTML = `
-        hui-masonry-view {
-    	  opacity: 0.` + Opacity + `;
+        hui-masonry-view,
+        hui-sections-view,
+        hui-panel-view {
+          filter: opacity(0.` + Opacity + `);
         }
       `;
 
