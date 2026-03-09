@@ -342,7 +342,11 @@ function getEntityState(entity) {
 
 //main render function
 function renderBackgroundHTML() {
+  Opacity = 99;
   var current_config = currentConfig();
+  if (current_config && parseInt(current_config.opacity) > 0) {
+    Opacity = current_config.opacity;
+  }
   var state_url = "";
   var temp_enabled = true;
   //rerender background if entity has changed (to avoid no background refresh if the new entity happens to have the same state)
@@ -518,8 +522,17 @@ function renderBackgroundHTML() {
       }
       `;
 
-      var transparent_body = document.createElement("style");
-      transparent_body.innerHTML = ``;
+      // Only apply opacity if configured - note this creates a CSS stacking
+      // context which may cause overlays (e.g. Bubble Card) to appear behind
+      // the background. Remove opacity: from your config if this affects you.
+      if (Opacity < 99) {
+        style.innerHTML += `
+      hui-masonry-view,
+      hui-sections-view,
+      hui-panel-view {
+          opacity: 0.` + Opacity + `;
+      }`;
+      }
 
 // transparent for top Pannel
       if (current_config.transparent_panel) {
