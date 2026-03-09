@@ -568,9 +568,7 @@ function renderBackgroundHTML() {
   // transparent for top Panel - evaluated on every render
   // Fall back to root Animated_Config for top-level settings not present in group/view configs
   var transparent_panel = current_config.transparent_panel !== undefined ? current_config.transparent_panel : (Animated_Config ? Animated_Config.transparent_panel : false);
-  var panel_opacity = current_config.opacity !== undefined ? current_config.opacity : (Animated_Config ? Animated_Config.opacity : 99);
   if (transparent_panel) {
-    console.log("AB: injecting panel style");
     if (!Hui.shadowRoot.getElementById('animated-bg-panel-style')) {
       var ha_style = document.createElement('style');
       ha_style.id = 'animated-bg-panel-style';
