@@ -15,7 +15,7 @@ This project builds on the work of several contributors:
 - **[Villhellm](https://github.com/Villhellm/lovelace-animated-background)** — original author. May he rest in peace.
 - **[dreimer1986](https://github.com/dreimer1986/lovelace-animated-background)** — fixes for Home Assistant 2023.04.0 and transparent card mode.
 - **[rbogdanov](https://github.com/rbogdanov/lovelace-animated-background)** — added transparent panel support and card opacity mode.
-- **[imonlinux](https://github.com/imonlinux/lovelace-animated-background)** — current maintainer; fixes for HA 2026.x, layout and CSS stacking context fixes, shadow DOM targeting corrections, and group config inheritance fixes.
+- **[imonlinux](https://github.com/imonlinux/lovelace-animated-background)** — fixes for HA 2026.x, layout and CSS stacking context fixes, shadow DOM targeting corrections, and group config inheritance fixes.
 
 ---
 
