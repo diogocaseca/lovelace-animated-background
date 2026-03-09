@@ -1,300 +1,153 @@
-# Animated backgrounds for lovelace
+# Lovelace Animated Background
+
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg)](https://github.com/hacs/integration)
 
-Animated backgrounds for lovelace with transparent cards style
+Animated video and image backgrounds for Home Assistant Lovelace dashboards, with support for entity-driven state changes, per-view configuration, transparent panels, and card opacity.
 
-## Add transparent for Top Model
-
-- Added transparent for top Pannel
-```yaml
-animated_background:
-  ...
-  transparent_panel: true/false
-  ...
-```
-Bubble Card users: If you wish to keep the opacity option enabled and are experiencing popup issues with Bubble Card specifically, adding hide_backdrop: true to your Bubble Card configuration will work around the stacking context issue by disabling the Bubble Card backdrop element. Note this removes the dimmed backdrop visual effect from Bubble Card popups.
-
-Sorry but now case sensitive (only lower)
-
-## ADD CHAGES FOR HOMEASSISTANT VERSION 2023.04.0
-
-- Fixed errors in new version Home Assistant. (Thanks [dreimer1986/lovelace-animated-background](https://github.com/dreimer1986/lovelace-animated-background.git)
-- Added transparent mode for cards.
-
-- `opacity:` - Number for transparent card level ( 0 - 99 ). **Note:** enabling this creates a CSS stacking context on the view element which may cause popups and overlays (e.g. Bubble Card) to appear behind the background. See Troubleshooting section below.
-example:
-```yaml
-animated_background:
-  default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-  opacity: 80
-  included_users:
-    - Villhellm
-  # This entity is just an example, use whatever entity you would like
-  entity: "weather.home"
-```
-
-## Cloning from [Villhellm](https://github.com/Villhellm/lovelace-animated-background)
-May he rest in peace. :(
-
-## MAJOR BREAKING CHANGE IN v0.5.0+
-YOUR ANIMATED BACKGROUND CONFIGURATION WILL NEED TO BE UPDATED, follow the new configuration guidelines below.
-
-## Animated Lovelace Background
-
-This module is for [Lovelace](https://www.home-assistant.io/lovelace) on [Home Assistant](https://www.home-assistant.io/)
-
-Create animated backgrounds based on the state of one of your entities. Originally designed for changing with the weather, à la [VideoBackground-Card](https://github.com/Perdemot/Lovelace-Cards/tree/master/VideoBackground-Card), you can now choose any entity in home assistant and create an animated background for each of its states.
-
-A big thanks to [Customer Header](https://github.com/maykar/custom-header) and [VideoBackground-Card](https://github.com/Perdemot/Lovelace-Cards/tree/master/VideoBackground-Card) for the inspiration.
-
-Example:
 ![Example](https://raw.githubusercontent.com/Villhellm/README_images/master/Animation.gif)
 
-## Installation Method 1: Manual
+---
 
-### Step 1
+## Attribution
 
-Install `animated-background` by copying `animated-background.js` from this repo to `<config directory>/www/animated-background.js` on your Home Assistant instance.
+This project builds on the work of several contributors:
 
-### Step 2
+- **[Villhellm](https://github.com/Villhellm/lovelace-animated-background)** — original author. May he rest in peace.
+- **[dreimer1986](https://github.com/dreimer1986/lovelace-animated-background)** — fixes for Home Assistant 2023.04.0 and transparent card mode.
+- **[rbogdanov](https://github.com/rbogdanov/lovelace-animated-background)** — added transparent panel support and card opacity mode.
+- **[imonlinux](https://github.com/imonlinux/lovelace-animated-background)** — current maintainer; fixes for HA 2026.x, layout and CSS stacking context fixes, shadow DOM targeting corrections, and group config inheritance fixes.
 
-Add the resource to your configuration. If you are in yaml mode follow [the lovelace docs](https://www.home-assistant.io/lovelace/dashboards-and-views/#resources). If you are using the UI to manage resources then go you `<your-ha-address>/config/lovelace/resources` and add the URL `/local/animated-background.js` as a javascript module. 
+---
 
-### Step 3
+## Installation
 
-Add the custom element in the root of your `ui-lovelace.yaml` (or Lovelace raw configuration if not in yaml mode), not in a view or card.
-Ex:
+### Method 1: HACS (Recommended)
+
+> **Note:** HACS 2.0 changed the installation process significantly. The old "overflow menu → Custom repositories" workflow no longer exists. HACS is now installed as a proper Home Assistant integration. If you don't have HACS yet, follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/).
+
+1. In HACS, select the **three-dot menu** (⋮) in the top right and choose **Custom repositories**.
+2. Paste `https://github.com/imonlinux/lovelace-animated-background` as the repository URL and select **Dashboard** as the category.
+3. Find **Lovelace Animated Background** in the available downloads and install it.
+4. Add the resource to your dashboard.
+
+### Method 2: Manual
+
+1. Copy `animated-background.js` from this repository to `<config directory>/www/animated-background.js` on your Home Assistant instance.
+2. Register the resource — see [Registering the resource](https://claude.ai/chat/5905014c-aa85-4fb7-95c4-3943bd6d8557#registering-the-resource) below.
+
+**Registering the resource**
+
+After installing manually, you need to register the JavaScript file as a Lovelace resource.
+
+**Via the UI**
+
+> Requires **Advanced Mode** to be enabled on your user profile. Go to your profile (click your name in the bottom-left sidebar) and toggle **Advanced Mode** on.
+
+Navigate to **Settings → Dashboards**, then open the **three-dot menu (⋮)** in the top right and select **Resources**. Add a new resource with:
+
+- **Manual install URL:** `/local/animated-background.js`
+- **Resource type:** JavaScript Module
+
+---
+
+## Setup
+
+Add the `animated_background:` block at the **root** of your Lovelace dashboard configuration — not inside a view or card. If you are using UI-managed dashboards, access the raw configuration editor via the **pencil icon → three-dot menu → Edit in YAML** on your dashboard.
+
 ```yaml
 animated_background:
   default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-  included_users:
-    - Villhellm
-  # This entity is just an example, use whatever entity you would like
   entity: "weather.home"
   state_url:
     'sunny':
       - "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
       - "https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4"
-      - "https://cdn.flixel.com/flixel/jvw1avupguhfbo11betq.hd.mp4"
-      - "https://cdn.flixel.com/flixel/8cmeusxf3pkanai43djs.hd.mp4"
-      - "https://cdn.flixel.com/flixel/guwb10mfddctfvwioaex.hd.mp4"
-
-    'partlycloudy':
-      - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-      - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-      - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-      - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-      - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-      - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-    'cloudy':
-      - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-      - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-      - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-      - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-      - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-      - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-    'mostlycloudy':
-      - "https://cdn.flixel.com/flixel/e95h5cqyvhnrk4ytqt4q.hd.mp4"
-      - "https://cdn.flixel.com/flixel/l2bjw34wnusyf5q2qq3p.hd.mp4"
-      - "https://cdn.flixel.com/flixel/rrgta099ulami3zb9fd2.hd.mp4"
-
+    'rainy': "https://cdn.flixel.com/flixel/f0w23bd0enxur5ff0bxz.hd.mp4"
     'clear-night':
-      - "https://cdn.flixel.com/flixel/x9dr8caygivq5secll7i.hd.mp4"
-      - "https://cdn.flixel.com/flixel/v26zyfd6yf0r33s46vpe.hd.mp4"
       - "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
       - "https://cdn.flixel.com/flixel/rosz2gi676xhkiw1ut6i.hd.mp4"
-
-    'fog':
-      - "https://cdn.flixel.com/flixel/vwqzlk4turo2449be9uf.hd.mp4"
-      - "https://cdn.flixel.com/flixel/5363uhabodwwrzgnq6vx.hd.mp4"
-
-    'rainy': "https://cdn.flixel.com/flixel/f0w23bd0enxur5ff0bxz.hd.mp4"
-
-    'lightning':
-      - "https://cdn.flixel.com/flixel/sbk5sc03j7vay52r3e4o.hd.mp4"
-
-    'snowy-rainy':
-      - "https://cdn.flixel.com/flixel/ykgpjn09rt49e8e1qx3b.hd.mp4"
-
-    'snowy':
-      - "https://cdn.flixel.com/flixel/ykgpjn09rt49e8e1qx3b.hd.mp4"
 
 title: Home
 views: ...
 ```
 
-## Installation Method 2: HACS
+> Any `mp4`, `webm`, or image URL will work, including local `/local/` paths. Using locally stored videos is strongly recommended — it greatly improves loading times and avoids dependence on external CDNs. Short looping videos ("cinemagraphs") work best.
+> 
+> **See the example configuration below.**
 
-### Step 1
+---
 
-Make sure you have [HACS](https://github.com/custom-components/hacs) installed. Navigate to the overflow menu and open the "Custom repositories" menu. Copy and paste the [lovelace-animated-background](https://github.com/rbogdanov/lovelace-animated-background) github repository URL, and paste it in the Repository field and select "Dashboard" for the Type. Locate the "Lovelace Animated Background" dashboard from the "Available for download section", open and install.
+## Configuration Reference
 
-### Step 2
+All options go under the `animated_background:` key at the root of your Lovelace dashboard config.
 
-Add the resource to your configuration. If you are in yaml mode follow [the lovelace docs](https://www.home-assistant.io/lovelace/dashboards-and-views/#resources) and add the URL `/hacsfiles/lovelace-animated-background/animated-background.js` as a module. If you are using the UI to manage resources then click the button at the top of the Animated Background HACS page to automatically add it to your resources.
+| Option | Type | Description |
+| --- | --- | --- |
+| `default_url` | string or list | Fallback video or image URL when no entity state matches. If a list is provided, a random entry is selected. |
+| `enabled` | bool | Set to `false` to disable the plugin entirely. Default: `true`. |
+| `entity` | string | Home Assistant entity whose state drives background changes. |
+| `state_url` | map | Map of entity states to video or image URLs. Each value can be a single URL or a list. Set a state to `'none'` to disable the background for that state. Required if `entity` is set. |
+| `opacity` | number (0–99) | Makes the view element semi-transparent so the background shows through cards. Requires a theme that sets card backgrounds to transparent or semi-transparent. **Note:** this creates a CSS stacking context — see [Troubleshooting](https://claude.ai/chat/5905014c-aa85-4fb7-95c4-3943bd6d8557#troubleshooting-popups-appear-behind-the-background). |
+| `transparent_panel` | bool | Makes the top navigation panel/header transparent. Default: `false`. |
+| `views` | list | Per-view configuration overrides. See [View Configuration](https://claude.ai/chat/5905014c-aa85-4fb7-95c4-3943bd6d8557#view-configuration). |
+| `groups` | list | Named reusable configurations that views can reference. See [Group Configuration](https://claude.ai/chat/5905014c-aa85-4fb7-95c4-3943bd6d8557#group-configuration). |
+| `included_users` | list of strings | Only these users will see the animated background. All others are excluded. |
+| `excluded_users` | list of strings | These users will not see the animated background. |
+| `included_devices` | list of strings | Only these device types will show the background. Supported values: `iphone`, `ipad`, `windows`, `macintosh`, `android`. |
+| `excluded_devices` | list of strings | These device types will not show the background. |
+| `debug` | bool | Enables detailed console logging. |
+| `display_user_agent` | bool | Shows an alert with your current user agent string. Useful for determining the correct value to use in device include/exclude lists. |
 
-### Step 3
+> **Note on `opacity`:** The `opacity` setting makes the entire view container semi-transparent, which only produces a see-through card effect when combined with a theme that sets `--ha-card-background` to a transparent or semi-transparent colour (e.g. `rgba(0,0,0,0.3)`). Without a compatible theme, cards will appear faded but not transparent. Several HACS themes (such as iOS themes) provide this out of the box.
 
-Add the custom element in the root of your `ui-lovelace.yaml` (or Lovelace raw configuration if not in yaml mode), not in a view or card.
-Ex:
-```yaml
-animated_background:
-  default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-  included_users:
-    - Villhellm
-  # This entity is just an example, use whatever entity you would like
-  entity: "weather.home"
-  state_url:
-    'sunny':
-      - "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
-      - "https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4"
-      - "https://cdn.flixel.com/flixel/jvw1avupguhfbo11betq.hd.mp4"
-      - "https://cdn.flixel.com/flixel/8cmeusxf3pkanai43djs.hd.mp4"
-      - "https://cdn.flixel.com/flixel/guwb10mfddctfvwioaex.hd.mp4"
+> **Note on `transparent_panel` and `opacity` with groups:** These settings are always read from the root `animated_background:` config, even when a view is using a group configuration. You do not need to repeat them inside each group definition.
 
-    'partlycloudy':
-      - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-      - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-      - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-      - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-      - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-      - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-    'cloudy':
-      - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-      - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-      - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-      - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-      - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-      - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-    'mostlycloudy':
-      - "https://cdn.flixel.com/flixel/e95h5cqyvhnrk4ytqt4q.hd.mp4"
-      - "https://cdn.flixel.com/flixel/l2bjw34wnusyf5q2qq3p.hd.mp4"
-      - "https://cdn.flixel.com/flixel/rrgta099ulami3zb9fd2.hd.mp4"
-
-    'clear-night':
-      - "https://cdn.flixel.com/flixel/x9dr8caygivq5secll7i.hd.mp4"
-      - "https://cdn.flixel.com/flixel/v26zyfd6yf0r33s46vpe.hd.mp4"
-      - "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-      - "https://cdn.flixel.com/flixel/rosz2gi676xhkiw1ut6i.hd.mp4"
-
-    'fog':
-      - "https://cdn.flixel.com/flixel/vwqzlk4turo2449be9uf.hd.mp4"
-      - "https://cdn.flixel.com/flixel/5363uhabodwwrzgnq6vx.hd.mp4"
-
-    'rainy': "https://cdn.flixel.com/flixel/f0w23bd0enxur5ff0bxz.hd.mp4"
-
-
-title: Home
-views: ...
-```
-
-# Configuration
-
-Configuration for Animated Background goes into the root of your Lovelace config.
-
-## Animated Background Configuration Options
-
-| Name | Type | Requirement | Description
-| ---- | ---- | ------- | -----------
-| default_url | string or list(string) | **Optional** | If no matching state is found, this is the fallback video url. You can either define a single url or an array. If an array is defined then a random video will be selected from that array.
-| enabled | bool | **Optional** | Set to false to disable Animated Background
-| display_user_agent | bool | **Optional** | If set to true you will get an alert with your current user agent. This will help determine your device to use in `excluded_devices` or `included_devices`
-| debug | bool | **Optional** | Get more detailed log messages
-| views | list ([views](#view-configuration)) | **Optional** | Allows you to set custom configurations per view
-| groups | list ([group](#group-configuration)) | **Optional** | Allows you to set custom configurations that can be referenced in lovelace view configurations
-| entity | string | **Optional** | Entity to check for state changes
-| state_url | map | **Optional** | Map of states and video or image urls. Any mp4, webm, or image link will work, even relative `/local/` links. Using locally stored videos will greatly improve loading times. It is recommended to 'cinemagraphs', these videos are only a few seconds long and are meant to loop . Set to 'none' to disable background for the defined state (see example). You can either define a single url or an array. If an array is defined then a random video will be selected from that array. Required if `entity` is defined.
-| included_users | list (string) | **Optional** | List of users that will display animated background. If this option is set any users not included in this list will be excluded.
-| included_devices | list (string) | **Optional** | List of devices that will display animated background. If this option is set any devices not included in this list will be excluded. Ex:  iphone, ipad, windows, macintosh, android
-| excluded_users | list (string) | **Optional** | Users to be excluded
-| excluded_devices | list (string) | **Optional** | Devices to be excluded Ex:  iphone, ipad, windows, macintosh, android
-
-While all entries are optional, it is recommended to at least set `default_url` or `entity` with `state_url`. Without one of those set you would never know this plugin was installed. 
+---
 
 ## View Configuration
 
-| Name | Type | Requirement | Description
-| ---- | ---- | ------- | -----------
-| path | string | **Required** | The path to the Lovelace view you want to configure. Whatever comes after `/lovelace/` in your view's url. Even if you are using a different dashboard than `/lovelace/`, you still just use the last part of the url.
-| config | [config](#stored-config) | **Required** | See [stored config](#stored-config) for requirements and options
+You can override the background for specific dashboard views using the `views:` key.
 
-Ex:
+| Option | Type | Description |
+| --- | --- | --- |
+| `path` | string | The view path — whatever appears after `/lovelace/` in the URL. |
+| `config` | config object | A full or partial configuration for this view. Accepts the same options as a group config. |
+
 ```yaml
 animated_background:
   default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-  included_users:
-    - Villhellm
-  # This entity is just an example, use whatever entity you would like
   entity: "weather.home"
   state_url:
-    'sunny':
-      - "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
-      - "https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4"
-      - "https://cdn.flixel.com/flixel/jvw1avupguhfbo11betq.hd.mp4"
-      - "https://cdn.flixel.com/flixel/8cmeusxf3pkanai43djs.hd.mp4"
-      - "https://cdn.flixel.com/flixel/guwb10mfddctfvwioaex.hd.mp4"
-
-    'partlycloudy':
-      - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-      - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-      - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-      - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-      - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-      - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-    'cloudy':
-      - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-      - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-      - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-      - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-      - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-      - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-    'mostlycloudy':
-      - "https://cdn.flixel.com/flixel/e95h5cqyvhnrk4ytqt4q.hd.mp4"
-      - "https://cdn.flixel.com/flixel/l2bjw34wnusyf5q2qq3p.hd.mp4"
-      - "https://cdn.flixel.com/flixel/rrgta099ulami3zb9fd2.hd.mp4"
-
-    'clear-night':
-      - "https://cdn.flixel.com/flixel/x9dr8caygivq5secll7i.hd.mp4"
-      - "https://cdn.flixel.com/flixel/v26zyfd6yf0r33s46vpe.hd.mp4"
-      - "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-      - "https://cdn.flixel.com/flixel/rosz2gi676xhkiw1ut6i.hd.mp4"
-
-    'fog':
-      - "https://cdn.flixel.com/flixel/vwqzlk4turo2449be9uf.hd.mp4"
-      - "https://cdn.flixel.com/flixel/5363uhabodwwrzgnq6vx.hd.mp4"
-
-    'rainy': "https://cdn.flixel.com/flixel/f0w23bd0enxur5ff0bxz.hd.mp4"
+    'sunny': "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
   views:
     - path: gaming
       config:
-        default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
         entity: "light.game_room"
         state_url:
           'on':  "https://cdn.flixel.com/flixel/8cmeusxf3pkanai43djs.hd.mp4"
           'off': "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
+
 title: Home
 views: ...
 ```
 
+---
+
 ## Group Configuration
 
-| Name | Type | Requirement | Description
-| ---- | ---- | ------- | -----------
-| name | string | **Required** | The name you would like to use to define your group.
-| config | [config](#stored-config) | **Required** | See [stored config](#stored-config) for requirements and options
+Groups let you define a named background configuration that can be reused across multiple views with a single line.
 
-Groups can be used to easily reuse Animated Background configurations. After defining your `groups:` block with at least one entry, you can add a single line to any of your views to use this configuration. 
+| Option | Type | Description |
+| --- | --- | --- |
+| `name` | string | The name used to reference this group from a view. |
+| `config` | config object | The background configuration for this group. |
 
-Ex:
+To use a group on a view, add `animated_background: <group-name>` to the view definition. Set it to `'none'` to explicitly disable the background on a view.
+
 ```yaml
 animated_background:
   default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
+  transparent_panel: true
   groups:
     - name: weather
       config:
@@ -303,120 +156,178 @@ animated_background:
           'sunny':
             - "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
             - "https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4"
-            - "https://cdn.flixel.com/flixel/jvw1avupguhfbo11betq.hd.mp4"
-            - "https://cdn.flixel.com/flixel/8cmeusxf3pkanai43djs.hd.mp4"
-            - "https://cdn.flixel.com/flixel/guwb10mfddctfvwioaex.hd.mp4"
-
-          'partlycloudy':
-            - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-            - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-            - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-            - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-            - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-            - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-          'cloudy':
-            - "https://cdn.flixel.com/flixel/13e0s6coh6ayapvdyqnv.hd.mp4"
-            - "https://cdn.flixel.com/flixel/aorl3skmssy7udwopk22.hd.mp4"
-            - "https://cdn.flixel.com/flixel/qed6wvf2igukiioykg3r.hd.mp4"
-            - "https://cdn.flixel.com/flixel/3rd72eezaj6d23ahlo7y.hd.mp4"
-            - "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-            - "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-
-          'mostlycloudy':
-            - "https://cdn.flixel.com/flixel/e95h5cqyvhnrk4ytqt4q.hd.mp4"
-            - "https://cdn.flixel.com/flixel/l2bjw34wnusyf5q2qq3p.hd.mp4"
-            - "https://cdn.flixel.com/flixel/rrgta099ulami3zb9fd2.hd.mp4"
-
-          'clear-night':
-            - "https://cdn.flixel.com/flixel/x9dr8caygivq5secll7i.hd.mp4"
-            - "https://cdn.flixel.com/flixel/v26zyfd6yf0r33s46vpe.hd.mp4"
-            - "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-            - "https://cdn.flixel.com/flixel/rosz2gi676xhkiw1ut6i.hd.mp4"
-
-          'fog':
-            - "https://cdn.flixel.com/flixel/vwqzlk4turo2449be9uf.hd.mp4"
-            - "https://cdn.flixel.com/flixel/5363uhabodwwrzgnq6vx.hd.mp4"
-
           'rainy': "https://cdn.flixel.com/flixel/f0w23bd0enxur5ff0bxz.hd.mp4"
+
 views:
   - path: home
     title: Home
-    cards:
-      - entity: weather.home
-        type: weather-forecast
-  - path: display
-    title: Display
-    animated_background: weather #this is the line to add to your view to use the "weather" group configuration.
-    #Set to 'none' if you would like to disable the background for this view
-    cards:
-      - entity: weather.home
-        type: weather-forecast
+    animated_background: weather
+    cards: ...
+  - path: cameras
+    title: Cameras
+    animated_background: 'none'  # disable background on this view
+    cards: ...
 ```
 
-## Stored Config
+---
 
-| Name | Type | Requirement | Description
-| ---- | ---- | ------- | -----------
-| default_url | string or list(string) | **Optional** | If no matching state is found, this is the fallback video url. You can either define a single url or an array. If an array is defined then a random video will be selected from that array.
-| enabled | bool | **Optional** | Set to false to disable Animated Background
-| entity | string | **Optional** | Entity to check for state changes
-| state_url | map | **Optional** | Map of states and video or image urls. Any mp4, webm, or image will work, even relative `/local/` links. Using locally stored videos will greatly improve loading times. It is recommended to 'cinemagraphs', these videos are only a few seconds long and are meant to loop . Set to 'none' to disable background for the defined state (see example). You can either define a single url or an array. If an array is defined then a random video will be selected from that array. Required if `entity` is defined.
-| included_users | list (string) | **Optional** | List of users that will display animated background. If this option is set any users not included in this list will be excluded.
-| included_devices | list (string) | **Optional** | List of devices that will display animated background. If this option is set any devices not included in this list will be excluded. Ex:  iphone, ipad, windows, macintosh, android
-| excluded_users | list (string) | **Optional** | Users to be excluded
-| excluded_devices | list (string) | **Optional** | Devices to be excluded Ex:  iphone, ipad, windows, macintosh, android
-| background | string | **Optional** | CSS option for the background overlay. Default is 'transparent'
+## Examples:
 
-## Example if you want a different background for night and day when a switch changes (or any combination of entities)
-A few people have asked about tying this to multiple entities. The good news is this is already possible with the use of a template sensor. Here is an example of a template sensor that would allow a different background for night/day when a bedroom switch changes.
+### Full weather example with locally stored videos
 
-configuration.yaml
-```yaml
-sensor:
-  - platform: template
-    sensors:
-      sun_bedroom:
-        friendly_name: "Sun and Bedroom"
-        value_template: "{{states('sun.sun') + '-' + states('switch.bedroom')}}"
-        #this will return a state like 'above_horizon-on'
-```
+This is a complete real-world example using locally stored videos for all standard weather states. The filename portion of each local path is the Flixel CDN ID, so you can also use them directly as CDN URLs — see the note below the example.
 
-`sun.sun` has two states, `above_horizon` and `below_horizon` AKA day and night.
-So now if you use `sensor.sun_bedroom` instead of just `switch.bedroom`, the beginning of the state will give you the binary state of the sun's position.
-Here is an example of an Animated Background configuration that will use this sensor to give a different background based on the switch *and* whether it is day or night.
-
-ui-lovelace.yaml (or raw configuration)
 ```yaml
 animated_background:
-  default_url: "https://cdn.flixel.com/flixel/ypy8bw9fgw1zv2b4htp2.hd.mp4"
-  entity: "sensor.sun_bedroom"
-  state_url:
-    'above_horizon-on': "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
+  default_url: /local/backgrounds/clear-night/ypy8bw9fgw1zv2b4htp2.hd.mp4
+  transparent_panel: true
+  groups:
+    - name: weather
+      config:
+        entity: weather.home
+        state_url:
+          exceptional:
+            - /local/backgrounds/sunny/hlhff0h8md4ev0kju5be.hd.mp4
+            - /local/backgrounds/sunny/zjqsoc6ecqhntpl5vacs.hd.mp4
+            - /local/backgrounds/sunny/8cmeusxf3pkanai43djs.hd.mp4
+            - /local/backgrounds/sunny/jvw1avupguhfbo11betq.hd.mp4
+            - /local/backgrounds/sunny/guwb10mfddctfvwioaex.hd.mp4
+          sunny:
+            - /local/backgrounds/sunny/hlhff0h8md4ev0kju5be.hd.mp4
+            - /local/backgrounds/sunny/zjqsoc6ecqhntpl5vacs.hd.mp4
+            - /local/backgrounds/sunny/8cmeusxf3pkanai43djs.hd.mp4
+            - /local/backgrounds/sunny/jvw1avupguhfbo11betq.hd.mp4
+            - /local/backgrounds/sunny/guwb10mfddctfvwioaex.hd.mp4
+          partlycloudy:
+            - /local/backgrounds/partlycloudy/13e0s6coh6ayapvdyqnv.hd.mp4
+            - /local/backgrounds/partlycloudy/aorl3skmssy7udwopk22.hd.mp4
+            - /local/backgrounds/partlycloudy/qed6wvf2igukiioykg3r.hd.mp4
+            - /local/backgrounds/partlycloudy/3rd72eezaj6d23ahlo7y.hd.mp4
+            - /local/backgrounds/partlycloudy/9m11gd43m6qn3y93ntzp.hd.mp4
+            - /local/backgrounds/partlycloudy/hrkw2m8eofib9sk7t1v2.hd.mp4
+          cloudy:
+            - /local/backgrounds/cloudy/13e0s6coh6ayapvdyqnv.hd.mp4
+            - /local/backgrounds/cloudy/aorl3skmssy7udwopk22.hd.mp4
+            - /local/backgrounds/cloudy/qed6wvf2igukiioykg3r.hd.mp4
+            - /local/backgrounds/cloudy/3rd72eezaj6d23ahlo7y.hd.mp4
+            - /local/backgrounds/cloudy/9m11gd43m6qn3y93ntzp.hd.mp4
+            - /local/backgrounds/cloudy/hrkw2m8eofib9sk7t1v2.hd.mp4
+            - /local/backgrounds/cloudy/e95h5cqyvhnrk4ytqt4q.hd.mp4
+            - /local/backgrounds/cloudy/l2bjw34wnusyf5q2qq3p.hd.mp4
+            - /local/backgrounds/cloudy/rrgta099ulami3zb9fd2.hd.mp4
+          mostlycloudy:
+            - /local/backgrounds/mostlycloudy/l2bjw34wnusyf5q2qq3p.hd.mp4
+            - /local/backgrounds/mostlycloudy/rrgta099ulami3zb9fd2.hd.mp4
+          clear-night:
+            - /local/backgrounds/clear-night/x9dr8caygivq5secll7i.hd.mp4
+            - /local/backgrounds/clear-night/v26zyfd6yf0r33s46vpe.hd.mp4
+            - /local/backgrounds/clear-night/ypy8bw9fgw1zv2b4htp2.hd.mp4
+            - /local/backgrounds/clear-night/rosz2gi676xhkiw1ut6i.hd.mp4
+            - /local/backgrounds/clear-night/x5rxll400y2um2xe677c.hd.mp4
+          fog:
+            - /local/backgrounds/fog/5363uhabodwwrzgnq6vx.hd.mp4
+            - /local/backgrounds/fog/4dbfz329lqn0gzxft14l.hd.mp4
+            - /local/backgrounds/fog/vabb5tnx2psqf1221ue9.hd.mp4
+            - /local/backgrounds/fog/1xgcgyb68b15ysz30gw9.hd.mp4
+          rainy:
+            - /local/backgrounds/rainy/f0w23bd0enxur5ff0bxz.hd.mp4
+            - /local/backgrounds/rainy/qti3s5st0srowd9krhcw.hd.mp4
+          lightning:
+            - /local/backgrounds/lightning/sbk5sc03j7vay52r3e4o.hd.mp4
+            - /local/backgrounds/lightning/chrgj6raf5q3s6y2so7z.hd.mp4
+            - /local/backgrounds/lightning/j6txa6307zgmk4olaykl.hd.mp4
+          lightning-rainy:
+            - /local/backgrounds/lightning-rainy/sbk5sc03j7vay52r3e4o.hd.mp4
+            - /local/backgrounds/lightning-rainy/chrgj6raf5q3s6y2so7z.hd.mp4
+          pouring:
+            - /local/backgrounds/pouring/f0w23bd0enxur5ff0bxz.hd.mp4
+            - /local/backgrounds/pouring/qti3s5st0srowd9krhcw.hd.mp4
+          snowy:
+            - /local/backgrounds/snowy/on3ysblo5hzdmrhv1kwh.hd.mp4
+            - /local/backgrounds/snowy/psi1hhbsshcus8eumtr7.hd.mp4
+          snowy-rainy:
+            - /local/backgrounds/snowyrainy/ndza6yswd0k6vlboxyhk.hd.mp4
+          windy:
+            - /local/backgrounds/windy/2qmg1xgcswq79lxu09rl.hd.mp4
+            - /local/backgrounds/windy/guwb10mfddctfvwioaex.hd.mp4
 
-    'below_horizon-on': "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
-
-    'above_horizon-off': "https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4"
-
-    'below_horizon-off': "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
-    
+views:
+  - path: home
+    title: Home
+    animated_background: weather
+    cards: ...
 ```
 
-# Warning to mobile users
-While I've done my best to perfect the device/user exceptions, I am not perfect. If you are using a mobile device and using an exception to prevent Animated Background from loading, please keep an eye on the Home Assistant app data use. If you notice unusually high usage after installing the plugin open an issue immediately and I will do my best to fix it. With the way themes function after Home Assistant .108 it is possible that the background video is being loaded behind the theme background (though I am pretty sure I've caught and destroyed all the bugs in that area).
+> To use CDN URLs instead of local files, replace any `/local/backgrounds/<state>/<id>.hd.mp4` with `https://cdn.flixel.com/flixel/<id>.hd.mp4`. For example:
 
-If you plan on *using* Animated Background on a mobile device, be aware that this will most likely use a lot of mobile data.
+```
+/local/backgrounds/sunny/hlhff0h8md4ev0kju5be.hd.mp4
+→ https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4
+```
 
-[Troubleshooting](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)
+---
 
-# Troubleshooting: Popups or overlays appear behind the background
+### Multiple entities using a template sensor
 
-If you are using a card integration such as **Bubble Card** and notice that popups or list overlays open *behind* the animated background, this is caused by a CSS stacking context issue.
+The plugin tracks a single entity at a time, but you can combine multiple entity states into one value using a [Template Helper](https://www.home-assistant.io/integrations/template/). This example creates a background that changes based on both the time of day and a bedroom switch state.
 
-Applying `filter` or `opacity` CSS properties to `hui-masonry-view`, `hui-sections-view`, or `hui-panel-view` forces the browser to create a new stacking context for those elements. This confines the z-index of all child elements — including popup overlays — to that stacking context, preventing them from appearing above the background.
+**Option 1: Create a Helper in the UI (recommended)**
 
-**The default behaviour** removes all `filter` and `opacity` CSS injection from view root elements entirely. The background wrapper and iframe also have `pointer-events: none` applied so they never intercept mouse or touch input.
+Go to **Settings → Devices & Services → Helpers → Create Helper → Template → Template sensor** and enter:
 
-If you use the `opacity` configuration option (values 1–99), the plugin will apply a plain `opacity:` CSS property to the view element to make cards semi-transparent over the background. This creates a CSS stacking context which confines the z-index of all child elements — including popup overlays — preventing them from appearing above the background. If popups or overlays appear behind the background while using the `opacity` option, remove it or set it to `100`.
+```
+{{ states('sun.sun') + '-' + states('switch.bedroom') }}
+```
 
-> **Note:** Do not apply `filter` or `opacity` CSS properties directly to `hui-masonry-view`, `hui-sections-view`, or `hui-panel-view` via themes or custom CSS, as this will re-introduce the stacking context issue and cause dialogs/popups to render behind overlays.
+Give it a name like `Sun and Bedroom`. This creates a sensor (e.g. `sensor.sun_and_bedroom`) without editing any YAML files.
+
+**Option 2: YAML in `configuration.yaml`**
+
+```yaml
+template:
+  - sensor:
+      - name: "Sun and Bedroom"
+        state: "{{ states('sun.sun') + '-' + states('switch.bedroom') }}"
+        # Returns states like 'above_horizon-on' or 'below_horizon-off'
+```
+
+**Lovelace config (either option):**
+
+```yaml
+animated_background:
+  entity: "sensor.sun_and_bedroom"
+  state_url:
+    'above_horizon-on':  "https://cdn.flixel.com/flixel/hlhff0h8md4ev0kju5be.hd.mp4"
+    'above_horizon-off': "https://cdn.flixel.com/flixel/zjqsoc6ecqhntpl5vacs.hd.mp4"
+    'below_horizon-on':  "https://cdn.flixel.com/flixel/9m11gd43m6qn3y93ntzp.hd.mp4"
+    'below_horizon-off': "https://cdn.flixel.com/flixel/hrkw2m8eofib9sk7t1v2.hd.mp4"
+```
+
+> `sun.sun` has two states — `above_horizon` (daytime) and `below_horizon` (night) — giving you four possible combinations to map backgrounds to.
+
+---
+
+## Troubleshooting: Popups appear behind the background
+
+If you use **Bubble Card** or similar popup integrations and notice popups opening behind the background, this is a CSS stacking context issue caused by the `opacity` option.
+
+When `opacity` is set (any value 1–99), the plugin applies an `opacity` CSS property to the view container element. This forces the browser to create a new stacking context, which confines the `z-index` of all child elements — including popups — preventing them from rendering above the background.
+
+**Solutions:**
+
+- **Remove the `opacity` option** from your config if you don't need semi-transparent cards. This is the cleanest fix.
+- **Bubble Card workaround:** Add `hide_backdrop: true` to your Bubble Card configuration. This disables the Bubble Card backdrop element which is the part most affected by the stacking context. Note that this removes the dimmed backdrop visual from Bubble Card popups.
+
+> Do not apply `filter` or `opacity` CSS directly to `hui-masonry-view`, `hui-sections-view`, or `hui-panel-view` via themes or custom CSS — this will cause the same stacking context issue.
+
+---
+
+## Note for mobile users
+
+If you are using device exclusions to prevent the background loading on mobile, monitor your Home Assistant app data usage after installing. If you notice unexpectedly high data usage, please open an issue.
+
+If you intentionally use this plugin on mobile, be aware it will consume significant mobile data, particularly with remote CDN video URLs. Using locally stored videos (`/local/`) will reduce this considerably.
+
+---
+
+[General Lovelace plugin troubleshooting](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)
