@@ -564,18 +564,21 @@ function renderBackgroundHTML() {
 
     // transparent for top Panel - evaluated on every render
     if (current_config.transparent_panel) {
-      if (!document.getElementById('animated-bg-panel-style')) {
+      if (!Root.shadowRoot.getElementById('animated-bg-panel-style')) {
         var ha_style = document.createElement('style');
         ha_style.id = 'animated-bg-panel-style';
         ha_style.innerHTML = `
-          html {
-            --app-header-background-color: transparent;
+          .header {
+            background-color: transparent !important;
+          }
+          .toolbar {
+            background-color: transparent !important;
           }`;
-        document.head.appendChild(ha_style);
+        Root.shadowRoot.appendChild(ha_style);
       }
     }
     else {
-      var panelStyle = document.getElementById('animated-bg-panel-style');
+      var panelStyle = Root.shadowRoot.getElementById('animated-bg-panel-style');
       if (panelStyle) panelStyle.remove();
     }
   }
