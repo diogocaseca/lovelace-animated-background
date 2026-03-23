@@ -334,5 +334,6 @@ If you intentionally use this plugin on mobile, be aware it will consume signifi
 [General Lovelace plugin troubleshooting](https://github.com/thomasloven/hass-config/wiki/Lovelace-Plugins)
 
 ---
+## Seal
 
 ![Vibe Coding by Copilot](assets/vibe-coding-seal.png)
