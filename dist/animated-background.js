@@ -589,12 +589,22 @@ function renderBackgroundHTML() {
 }
 
 function urlIsVideo(url) {
-  if (url.slice(url.length - 3).toLowerCase() == "mp4" || url.slice(url.length - 4).toLowerCase() == "webm") {
-    return url.slice(url.length - 3).toLowerCase();
+  if (!url || typeof url !== "string") {
+    return false;
   }
-  if (url.slice(url.length - 4).toLowerCase() == "webm") {
-    return url.slice(url.length - 4).toLowerCase();
+
+  // Normalize URL/path and ignore query strings/hash fragments.
+  var clean_url = url.split("?")[0].split("#")[0].toLowerCase();
+  var last_dot = clean_url.lastIndexOf(".");
+  if (last_dot === -1) {
+    return false;
   }
+
+  var extension = clean_url.slice(last_dot + 1);
+  if (extension === "mp4" || extension === "webm") {
+    return extension;
+  }
+
   return false;
 }
 
