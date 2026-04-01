@@ -1,7 +1,7 @@
 {
     "name": "Lovelace Animated Background",
     "render_readme": true,
-    "filename": "lovelace-animated-background.js",
+    "filename": "animated-background.js",
     "content_in_root": false,
     "homeassistant": "2021.12.0"
 }
