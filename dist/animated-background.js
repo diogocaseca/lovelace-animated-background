@@ -17,6 +17,7 @@ var View_Loaded = false;
 var Meme_Remover = null;
 var Meme_Count = 0;
 var Opacity = 99;
+var Restart_Interval = null;
 
 //state tracking variables
 let Previous_State;
@@ -795,8 +796,8 @@ function run() {
 
 function restart() {
   cleanupDOM();
-  clearInterval(wait_interval);
-  var wait_interval = setInterval(() => {
+  clearInterval(Restart_Interval);
+  Restart_Interval = setInterval(() => {
     getVars()
     if (Hui) {
       Previous_Entity = null;
@@ -806,7 +807,8 @@ function restart() {
       clearMemes();
       View_Observer.disconnect();
       run();
-      clearInterval(wait_interval);
+      clearInterval(Restart_Interval);
+      Restart_Interval = null;
     }
   }, 200);
 }

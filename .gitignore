@@ -1,2 +1,12 @@
 .DS_Store
 *.txt
+
+# Editor and IDE
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*~

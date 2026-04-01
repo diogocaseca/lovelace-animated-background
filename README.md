@@ -27,7 +27,7 @@ This project builds on the work of several contributors:
 > **Note:** HACS 2.0 changed the installation process significantly. The old "overflow menu → Custom repositories" workflow no longer exists. HACS is now installed as a proper Home Assistant integration. If you don't have HACS yet, follow the [official HACS installation guide](https://www.hacs.xyz/docs/use/download/download/).
 
 1. In HACS, select the **three-dot menu** (⋮) in the top right and choose **Custom repositories**.
-2. Paste `https://github.com/imonlinux/lovelace-animated-background` as the repository URL and select **Dashboard** as the category.
+2. Paste `https://github.com/diogocaseca/lovelace-animated-background` as the repository URL and select **Dashboard** as the category.
 3. Find **Lovelace Animated Background** in the available downloads and install it.
 4. Add the resource to your dashboard.
 
