@@ -379,6 +379,11 @@ function renderBackgroundHTML() {
           }
           Previous_State = current_state;
         }
+        else {
+          // Preserve the current background URL across dashboard DOM rerenders
+          // (for example, when camera cards refresh) so the iframe can be rebuilt.
+          state_url = Previous_Url || "";
+        }
       }
       else {
         DEBUG_MESSAGE("No state_url found for the current state '" + current_state + "'. Attempting to set default_url")
