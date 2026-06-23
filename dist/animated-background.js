@@ -1,4 +1,5 @@
 
+(function () {
 const Debug_Prefix = "Animated Background DEBUG: ";
 const Log_Prefix = "Animated Background: "
 
@@ -171,7 +172,6 @@ function currentConfig() {
       });
     }
 
-    var current_view_path = currentViewPath();
     var current_view_config = Lovelace.config.views[Lovelace.current_view];
     if (Lovelace && current_view_path) {
       for (var i = 0; Lovelace.config.views.length > i; i++) {
@@ -194,7 +194,7 @@ function currentConfig() {
     }
 
     if (return_config) {
-      if (return_config.entity) {
+      if (return_config.entity && return_config.state_url) {
         var current_state = getEntityState(return_config.entity);
         var current_url = return_config.state_url[current_state];
         if (current_url) {
@@ -529,18 +529,6 @@ function renderBackgroundHTML() {
       }
       `;
 
-      // Only apply opacity if configured - note this creates a CSS stacking
-      // context which may cause overlays (e.g. Bubble Card) to appear behind
-      // the background. Remove opacity: from your config if this affects you.
-      if (Opacity < 99) {
-        style.innerHTML += `
-      hui-masonry-view,
-      hui-sections-view,
-      hui-panel-view {
-          opacity: 0.` + Opacity + `;
-      }`;
-      }
-
 // transparent for top Pannel
       var div = document.createElement("div");
       div.id = "background-video";
@@ -592,6 +580,31 @@ function renderBackgroundHTML() {
     var panelStyle = Hui.shadowRoot.getElementById('animated-bg-panel-style');
     if (panelStyle) panelStyle.remove();
   }
+
+  // Opacity is re-evaluated on every render (not only on first creation) so it
+  // tracks per-view/group config changes. Note it creates a CSS stacking context
+  // which may cause overlays (e.g. Bubble Card) to appear behind the background -
+  // remove opacity: from your config if this affects you.
+  var opacityStyle = Hui.shadowRoot.getElementById('animated-bg-opacity-style');
+  if (Opacity < 99) {
+    var opacity_css = `
+      hui-masonry-view,
+      hui-sections-view,
+      hui-panel-view {
+          opacity: 0.` + Opacity + `;
+      }`;
+    if (!opacityStyle) {
+      opacityStyle = document.createElement('style');
+      opacityStyle.id = 'animated-bg-opacity-style';
+      Hui.shadowRoot.appendChild(opacityStyle);
+    }
+    if (opacityStyle.innerHTML !== opacity_css) {
+      opacityStyle.innerHTML = opacity_css;
+    }
+  }
+  else if (opacityStyle) {
+    opacityStyle.remove();
+  }
 }
 
 function urlIsVideo(url) {
@@ -607,8 +620,15 @@ function urlIsVideo(url) {
   }
 
   var extension = clean_url.slice(last_dot + 1);
-  if (extension === "mp4" || extension === "webm") {
-    return extension;
+  // Map file extension -> <source> MIME subtype (used as type='video/<value>').
+  var video_types = {
+    mp4: "mp4",
+    webm: "webm",
+    ogv: "ogg",
+    mov: "quicktime"
+  };
+  if (video_types[extension]) {
+    return video_types[extension];
   }
 
   return false;
@@ -814,3 +834,4 @@ function restart() {
 }
 
 run();
+})();

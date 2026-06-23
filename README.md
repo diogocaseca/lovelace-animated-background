@@ -72,7 +72,7 @@ title: Home
 views: ...
 ```
 
-> Any `mp4`, `webm`, or image URL will work, including local `/local/` paths. Using locally stored videos is strongly recommended — it greatly improves loading times and avoids dependence on external CDNs. Short looping videos ("cinemagraphs") work best.
+> Any `mp4`, `webm`, `ogv`, `mov`, or image URL will work, including local `/local/` paths. Using locally stored videos is strongly recommended — it greatly improves loading times and avoids dependence on external CDNs. Short looping videos ("cinemagraphs") work best.
 > 
 > **See the example configuration below.**
 
