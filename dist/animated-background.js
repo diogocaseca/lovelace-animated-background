@@ -7,6 +7,8 @@ const Log_Prefix = "Animated Background: "
 var Root;
 var Hui;
 var Header;
+var Main;
+var Panel_Background_Overridden = null; // element whose inline vars we changed
 var Lovelace;
 var Animated_Config;
 var Haobj = null;
@@ -59,6 +61,7 @@ function getVars() {
   Header = Root;
   Root = Root && Root.shadowRoot;
   Root = Root && Root.querySelector("home-assistant-main");
+  Main = Root;
   Root = Root && Root.shadowRoot;
   Root = Root && Root.querySelector("app-drawer-layout partial-panel-resolver, ha-drawer partial-panel-resolver");
   
@@ -436,8 +439,11 @@ function renderBackgroundHTML() {
   processDefaultBackground(temp_enabled);
 
   if (!temp_enabled || !current_config) {
+    setPanelBackgroundTransparent(false);
     return;
   }
+
+  setPanelBackgroundTransparent(true);
 
   Previous_Config = current_config;
 
@@ -724,7 +730,40 @@ function setDebugMode() {
   }
 }
 
+// HA 2026.11+ paints the theme background once, behind all panels, on a
+// z-index:-1 layer inside home-assistant-main's stacking context
+// (isolation: isolate). Our .bg-wrap (z-index:-12) lives in that same context,
+// so the theme background would cover the video. Neutralize the variables that
+// layer reads, only while the animated background is active. On older HA,
+// --ha-panel-background is unused and --lovelace-background only feeds
+// hui-view-background, which this plugin already clears - so it is harmless.
+var Panel_Background_Vars = ["--ha-panel-background", "--lovelace-background"];
+
+function setPanelBackgroundTransparent(active) {
+  if (active) {
+    if (Panel_Background_Overridden && Panel_Background_Overridden !== Main) {
+      setPanelBackgroundTransparent(false);
+    }
+    if (!Panel_Background_Overridden && Main && Main.style) {
+      Panel_Background_Vars.forEach(function (v) {
+        Main.style.setProperty(v, "transparent");
+      });
+      Panel_Background_Overridden = Main;
+      DEBUG_MESSAGE("Panel background variables set to transparent");
+    }
+  }
+  else if (Panel_Background_Overridden) {
+    var el = Panel_Background_Overridden;
+    Panel_Background_Vars.forEach(function (v) {
+      el.style.removeProperty(v);
+    });
+    Panel_Background_Overridden = null;
+    DEBUG_MESSAGE("Panel background variables restored");
+  }
+}
+
 function cleanupDOM() {
+  setPanelBackgroundTransparent(false);
   if (Root && Root.shadowRoot) {
     var oldDiv = Root.shadowRoot.getElementById('background-video');
     if (oldDiv) oldDiv.remove();
