@@ -235,97 +235,54 @@ function enabled() {
     return false;
   }
 
-  //Root configuration exceptions
-  if (Animated_Config.excluded_devices) {
-    if (Animated_Config.excluded_devices.some(deviceIncluded)) {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current device is excluded", null, true);
-        temp_enabled = false;
-      }
-    }
+  // Precedence (documented in the README's Access notes):
+  //   1. Exclusions always win: a match on any excluded_users /
+  //      excluded_devices list (root or view/group config) disables the
+  //      background no matter what else is configured.
+  //   2. An explicit enabled: true/false on the view/group config applies
+  //      next - it can override inclusion lists, never exclusions.
+  //   3. Inclusion lists are allowlists: if any non-empty included_users /
+  //      included_devices list is configured, the current user or device
+  //      must match at least one of them.
+  var user_name = (Haobj.user && Haobj.user.name) ? Haobj.user.name.toLowerCase() : "";
+  function userInList(list) {
+    return (list || []).map(function (username) { return String(username).toLowerCase(); }).includes(user_name);
   }
 
-  if (Animated_Config.excluded_users) {
-    if (Animated_Config.excluded_users.map(username => username.toLowerCase()).includes(Haobj.user.name.toLowerCase())) {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current user: " + Haobj.user.name + " is excluded", null, true);
-        temp_enabled = false;
-      }
-    }
+  // 1. Exclusions win - evaluated first, short-circuit everything below.
+  if ((Animated_Config.excluded_devices && Animated_Config.excluded_devices.some(deviceIncluded)) ||
+      (current_config.excluded_devices && current_config.excluded_devices.some(deviceIncluded))) {
+    DEBUG_MESSAGE("Current device is excluded", null, true);
+    return false;
+  }
+  if (userInList(Animated_Config.excluded_users) || userInList(current_config.excluded_users)) {
+    DEBUG_MESSAGE("Current user: " + user_name + " is excluded", null, true);
+    return false;
   }
 
-  if (Animated_Config.included_users) {
-    if (Animated_Config.included_users.map(username => username.toLowerCase()).includes(Haobj.user.name.toLowerCase())) {
-      temp_enabled = true;
-    }
-    else {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current user: " + Haobj.user.name + " is not included", null, true);
-        temp_enabled = false;
-      }
-    }
-  }
-
-  if (Animated_Config.included_devices) {
-    if (Animated_Config.included_devices.some(deviceIncluded)) {
-      temp_enabled = true;
-    }
-    else {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current device is not included", null, true);
-        temp_enabled = false;
-      }
-    }
-  }
-
-  //Current config overrides (only does anything if curre_config and Animated_Config are different)
-  if (current_config.excluded_devices) {
-    if (current_config.excluded_devices.some(deviceIncluded)) {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current device is excluded", null, true);
-        temp_enabled = false;
-      }
-    }
-  }
-
-  if (current_config.excluded_users) {
-    if (current_config.excluded_users.map(username => username.toLowerCase()).includes(Haobj.user.name.toLowerCase())) {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current user: " + Haobj.user.name + " is excluded", null, true);
-        temp_enabled = false;
-      }
-    }
-  }
-
-  if (current_config.included_users) {
-    if (current_config.included_users.map(username => username.toLowerCase()).includes(Haobj.user.name.toLowerCase())) {
-      temp_enabled = true;
-    }
-    else {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current user: " + Haobj.user.name + " is not included", null, true);
-        temp_enabled = false;
-      }
-    }
-  }
-
-  if (current_config.included_devices) {
-    if (current_config.included_devices.some(deviceIncluded)) {
-      temp_enabled = true;
-    }
-    else {
-      if (temp_enabled) {
-        DEBUG_MESSAGE("Current device is not included", null, true);
-        temp_enabled = false;
-      }
-    }
-  }
-
+  // 2. Explicit per-config switch.
   if (current_config.enabled == false) {
-    temp_enabled = false;
+    return false;
   }
   if (current_config.enabled == true) {
-    temp_enabled = true;
+    return true;
+  }
+
+  // 3. Inclusion lists act as allowlists (root or per-config).
+  var has_inclusions =
+    (Animated_Config.included_users && Animated_Config.included_users.length) ||
+    (Animated_Config.included_devices && Animated_Config.included_devices.length) ||
+    (current_config.included_users && current_config.included_users.length) ||
+    (current_config.included_devices && current_config.included_devices.length);
+  if (has_inclusions) {
+    var user_matched = userInList(Animated_Config.included_users) || userInList(current_config.included_users);
+    var device_matched =
+      (Animated_Config.included_devices || []).some(deviceIncluded) ||
+      (current_config.included_devices || []).some(deviceIncluded);
+    if (!user_matched && !device_matched) {
+      DEBUG_MESSAGE("Current user (" + user_name + ") / device is not included", null, true);
+      return false;
+    }
   }
 
   return temp_enabled;
@@ -505,7 +462,12 @@ function renderBackgroundHTML() {
       if (!current_config.entity) {
         STATUS_MESSAGE("Applying default background", true);
       }
-      var style = document.createElement("style");
+      var style = Root.shadowRoot.getElementById("animated-bg-style");
+      if (!style) {
+        style = document.createElement("style");
+        style.id = "animated-bg-style";
+        Root.shadowRoot.appendChild(style);
+      }
       style.innerHTML = `
       .bg-video{
           min-width: 100vw; 
@@ -539,12 +501,17 @@ function renderBackgroundHTML() {
       var div = document.createElement("div");
       div.id = "background-video";
       div.className = "bg-wrap";
-      div.innerHTML = `
-       <iframe id="background-iframe" class="bg-video" frameborder="0" style="pointer-events:none;" srcdoc="${source_doc}"/> 
-      
-      `;
-    
-      Root.shadowRoot.appendChild(style);
+      // Built via element properties, not HTML interpolation: a double
+      // quote in a URL would truncate an interpolated srcdoc attribute and
+      // blank the background with no diagnostic.
+      var iframe = document.createElement("iframe");
+      iframe.id = "background-iframe";
+      iframe.className = "bg-video";
+      iframe.setAttribute("frameborder", "0");
+      iframe.style.pointerEvents = "none";
+      iframe.srcdoc = source_doc;
+      div.appendChild(iframe);
+
       Root.shadowRoot.appendChild(div);
       
       View.setAttribute ("style","background:none;");
@@ -566,6 +533,8 @@ function renderBackgroundHTML() {
     }  // <-- this closes the if (state_url != "" && Hui) block
 
   // transparent for top Panel - evaluated on every render
+  // Reachable with Hui unresolved (e.g. provideHass during startup), so gate first.
+  if (!Hui || !Hui.shadowRoot) return;
   // Fall back to root Animated_Config for top-level settings not present in group/view configs
   var transparent_panel = current_config.transparent_panel !== undefined ? current_config.transparent_panel : (Animated_Config ? Animated_Config.transparent_panel : false);
   if (transparent_panel) {
@@ -593,11 +562,14 @@ function renderBackgroundHTML() {
   // remove opacity: from your config if this affects you.
   var opacityStyle = Hui.shadowRoot.getElementById('animated-bg-opacity-style');
   if (Opacity < 99) {
+    // Computed numerically: concatenating after "0." turned single-digit
+    // values (5) into ten times the intended opacity (0.5).
+    var alpha = Math.min(99, Math.max(1, parseInt(Opacity, 10))) / 100;
     var opacity_css = `
       hui-masonry-view,
       hui-sections-view,
       hui-panel-view {
-          opacity: 0.` + Opacity + `;
+          opacity: ` + alpha + `;
       }`;
     if (!opacityStyle) {
       opacityStyle = document.createElement('style');
@@ -709,6 +681,7 @@ function processDefaultBackground(temp_enabled) {
 function clearMemes() {
   clearInterval(Meme_Remover);
   Meme_Remover = null;
+  Meme_Count = 0;
 }
 
 function setDebugMode() {
@@ -767,12 +740,14 @@ function cleanupDOM() {
   if (Root && Root.shadowRoot) {
     var oldDiv = Root.shadowRoot.getElementById('background-video');
     if (oldDiv) oldDiv.remove();
-    var oldStyles = Root.shadowRoot.querySelectorAll('style');
-    oldStyles.forEach(function(s) { s.remove(); });
   }
+  // Remove only our own style elements. hui-root's shadow root also holds
+  // Home Assistant's stylesheets (and card-mod's) - those must survive.
   if (Hui && Hui.shadowRoot) {
-    var panelStyle = Hui.shadowRoot.getElementById('animated-bg-panel-style');
-    if (panelStyle) panelStyle.remove();
+    ['animated-bg-style', 'animated-bg-panel-style', 'animated-bg-opacity-style'].forEach(function (id) {
+      var own = Hui.shadowRoot.getElementById(id);
+      if (own) own.remove();
+    });
   }
 }
 
@@ -795,7 +770,14 @@ function run() {
 
   //subscribe to hass object to detect state changes
   if (!Haobj) {
-    document.querySelector("home-assistant").provideHass({
+    var ha_el = document.querySelector("home-assistant");
+    if (!ha_el || typeof ha_el.provideHass !== "function") {
+      // run() fires at load, possibly before Home Assistant mounts.
+      // restart()'s poll loop waits for it.
+      restart();
+      return;
+    }
+    ha_el.provideHass({
       set hass(value) {
         if (Haobj && Haobj.panelUrl != value.panelUrl) {
           restart();
@@ -872,5 +854,13 @@ function restart() {
   }, 200);
 }
 
-run();
+// Guard against double registration (e.g. a leftover /local/ resource plus
+// the /hacsfiles/ one): two copies would run competing observers and render
+// loops on the same DOM.
+if (window.__animatedBackgroundLoaded) {
+  console.warn(Log_Prefix + "already loaded; ignoring duplicate resource registration.");
+} else {
+  window.__animatedBackgroundLoaded = true;
+  run();
+}
 })();
