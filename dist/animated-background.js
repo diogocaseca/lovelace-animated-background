@@ -21,12 +21,15 @@ var Meme_Remover = null;
 var Meme_Count = 0;
 var Opacity = 99;
 var Restart_Interval = null;
+var Refresh_Timer = null;
+var Refresh_Interval_Value = null;
 
 //state tracking variables
 let Previous_State;
 let Previous_Entity;
 let Previous_Url;
 let Previous_Config;
+let Previous_Last_Updated;
 
 function STATUS_MESSAGE(message, force) {
   if (!Debug_Mode) {
@@ -92,6 +95,7 @@ var View_Observer = new MutationObserver(function (mutations) {
       }
       View_Loaded = false;
       clearMemes();
+      clearRefreshTimer();
       renderBackgroundHTML();
     }
   });
@@ -339,6 +343,9 @@ function renderBackgroundHTML() {
             }
           }
           Previous_State = current_state;
+          if (Haobj && Haobj.states[current_config.entity]) {
+            Previous_Last_Updated = Haobj.states[current_config.entity].last_updated;
+          }
         }
         else {
           // Preserve the current background URL across dashboard DOM rerenders
@@ -404,6 +411,31 @@ function renderBackgroundHTML() {
 
   Previous_Config = current_config;
 
+  // refresh_interval (minutes): periodically re-pick a background from the
+  // current list. Root fallback, same as opacity/transparent_panel/overlay.
+  var refresh_interval = current_config.refresh_interval !== undefined
+    ? current_config.refresh_interval
+    : (Animated_Config ? Animated_Config.refresh_interval : undefined);
+  refresh_interval = parseFloat(refresh_interval);
+  if (!(refresh_interval > 0)) {
+    clearRefreshTimer();
+  }
+  else {
+    if (Refresh_Timer && refresh_interval != Refresh_Interval_Value) {
+      // interval edited since the timer was created - restart it
+      clearRefreshTimer();
+    }
+    if (!Refresh_Timer) {
+      Refresh_Interval_Value = refresh_interval;
+      Refresh_Timer = setInterval(function () {
+        DEBUG_MESSAGE("refresh_interval elapsed, picking a new background");
+        Previous_State = null;
+        Previous_Url = null;
+        renderBackgroundHTML();
+      }, refresh_interval * 60 * 1000);
+    }
+  }
+
   var html_to_render;
   if (state_url != "" && Hui) {
     var bg = Hui.shadowRoot.getElementById("background-iframe");
@@ -414,6 +446,34 @@ function renderBackgroundHTML() {
     }
     else {
       doc_body = `<img src='${state_url}'>`
+    }
+
+    // Optional tint overlay drawn above the media. Root fallback, same as
+    // opacity and transparent_panel. `color` is any CSS color; `opacity` 0..1.
+    var overlay = current_config.overlay !== undefined
+      ? current_config.overlay
+      : (Animated_Config ? Animated_Config.overlay : null);
+    var overlay_style = "";
+    var overlay_html = "";
+    if (overlay && (overlay.color || overlay.opacity != null)) {
+      var overlay_color = overlay.color || "#000000";
+      var overlay_opacity = overlay.opacity != null ? parseFloat(overlay.opacity) : 0.3;
+      if (isNaN(overlay_opacity)) {
+        overlay_opacity = 0.3;
+      }
+      overlay_opacity = Math.min(1, Math.max(0, overlay_opacity));
+      overlay_style = `
+        #overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background-color: ${overlay_color};
+          opacity: ${overlay_opacity};
+          pointer-events: none;
+        }`;
+      overlay_html = `<div id='overlay'></div>`;
     }
 
     
@@ -452,10 +512,12 @@ function renderBackgroundHTML() {
           left: 50%;
           transform: translate(-50%, -50%);
         }
+        ${overlay_style}
       </style>
     </head>  
     <body id='source-body'>
     ${doc_body}
+    ${overlay_html}
     </body>
     </html>`;
     if (!bg) {
@@ -684,6 +746,12 @@ function clearMemes() {
   Meme_Count = 0;
 }
 
+function clearRefreshTimer() {
+  clearInterval(Refresh_Timer);
+  Refresh_Timer = null;
+  Refresh_Interval_Value = null;
+}
+
 function setDebugMode() {
   if (Animated_Config) {
     if (Animated_Config.debug) {
@@ -787,7 +855,22 @@ function run() {
         if (Loaded) {
           if (current_config && current_config.entity) {
             var current_state = getEntityState(current_config.entity);
-            if (Previous_State != current_state) {
+            var entity_data = Haobj.states[current_config.entity];
+            var current_last_updated = entity_data ? entity_data.last_updated : null;
+            var state_changed = Previous_State != current_state;
+            // refresh_on_update: re-render when last_updated changes even if
+            // the state value does not. Root fallback like the other options.
+            var refresh_on_update = current_config.refresh_on_update !== undefined
+              ? current_config.refresh_on_update
+              : (Animated_Config ? Animated_Config.refresh_on_update : false);
+            var force_refresh = refresh_on_update && current_last_updated !== Previous_Last_Updated;
+            if (state_changed || force_refresh) {
+              if (force_refresh && !state_changed) {
+                Previous_State = null;
+              }
+              // Record it here too: the default_url path never sets it, which
+              // would otherwise re-render on every hass update.
+              Previous_Last_Updated = current_last_updated;
               clearMemes();
               renderBackgroundHTML();
             }
@@ -837,12 +920,14 @@ function run() {
 
 function restart() {
   cleanupDOM();
+  clearRefreshTimer();
   clearInterval(Restart_Interval);
   Restart_Interval = setInterval(() => {
     getVars()
     if (Hui) {
       Previous_Entity = null;
       Previous_State = null;
+      Previous_Last_Updated = null;
       Loaded = false;
       View_Loaded = false;
       clearMemes();
